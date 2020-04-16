@@ -28,11 +28,9 @@
 
 LineDelegate::LineDelegate(QObject *parent)
     : QStyledItemDelegate(parent)
-    , linePen(Qt::darkGreen)
-    , framePen(Qt::red)
+    , m_linePen(Qt::darkGreen)
 {
-    linePen.setWidthF(2.);
-    framePen.setWidthF(1.5);
+    m_linePen.setWidthF(2.);
 }
 
 void LineDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
@@ -47,11 +45,8 @@ void LineDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, 
 
         painter->save();
 
-        painter->setPen(linePen);
+        painter->setPen(m_linePen);
         painter->drawLine(lineF);
-
-        painter->setPen(framePen);
-        painter->drawRect(option.rect);
 
         painter->restore();
     }
@@ -84,8 +79,8 @@ void LineDelegate::handleMousePress(QMouseEvent *event, QAbstractItemModel *mode
     Q_UNUSED(model);
 
     if (index.isValid()) {
-        startIndex = index;
-        startPoint = { event->x() - option.rect.x(), option.rect.center().y() };
+        m_startIndex = index;
+        m_startPoint = { event->x() - option.rect.x(), option.rect.center().y() };
     }
 }
 
@@ -93,13 +88,13 @@ void LineDelegate::handleMouseMove(QMouseEvent *event, QAbstractItemModel *model
                                    const QModelIndex &index)
 {
     const QPoint endPoint = { event->x() - option.rect.x(), option.rect.center().y() };
-    if (startIndex != index) {
-        startIndex = index;
-        startPoint = endPoint;
+    if (m_startIndex != index) {
+        m_startIndex = index;
+        m_startPoint = endPoint;
     }
 
     //    LOG << startPoint << endPoint;
-    const Line &line = Line::fromQLine({ startPoint, endPoint }, option.rect);
+    const Line &line = Line::fromQLine({ m_startPoint, endPoint }, option.rect);
 
     model->setData(index, QVariant::fromValue(line), Line::DataRole);
 }
@@ -112,6 +107,6 @@ void LineDelegate::handleMouseRelease(QMouseEvent *event, QAbstractItemModel *mo
     Q_UNUSED(option);
     Q_UNUSED(index);
 
-    startIndex = QModelIndex();
-    startPoint = { -1, -1 };
+    m_startIndex = QModelIndex();
+    m_startPoint = { -1, -1 };
 }

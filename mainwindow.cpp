@@ -20,7 +20,6 @@
 #include "delegatedlinedata.h"
 #include "linedelegate.h"
 
-#include <QDebug>
 #include <QStandardItemModel>
 #include <QTableView>
 
@@ -45,14 +44,14 @@ MainWindow::MainWindow(QWidget *parent)
     }
 
     {
-        const QModelIndex testDelegate = m_model->index(1, 1);
-        const Line line { 0.2, 0.8 };
+        const QModelIndex testDelegate = m_model->index(0, 1);
+        const Line line { 0.5, 1.0 };
         m_model->setData(testDelegate, QVariant::fromValue(line), Line::DataRole);
     }
 
     {
-        const QModelIndex testDelegate = m_model->index(3, 3);
-        const Line line { 0.1, 0.9 };
+        const QModelIndex testDelegate = m_model->index(0, 2);
+        const Line line { 0.0, 0.5 };
         m_model->setData(testDelegate, QVariant::fromValue(line), Line::DataRole);
     }
 

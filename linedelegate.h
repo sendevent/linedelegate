@@ -31,9 +31,9 @@ public:
                      const QModelIndex &index) override;
 
 private:
-    QPen linePen, framePen;
-    QPoint startPoint;
-    QModelIndex startIndex;
+    QPen m_linePen;
+    QPoint m_startPoint;
+    QModelIndex m_startIndex;
 
     void handleMousePress(QMouseEvent *event, QAbstractItemModel *model, const QStyleOptionViewItem &option,
                           const QModelIndex &index);
