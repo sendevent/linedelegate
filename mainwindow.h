@@ -31,7 +31,7 @@ public:
     ~MainWindow();
 
 private:
-    QTableView *m_view {nullptr};
-    QAbstractItemModel *m_model {nullptr};
-    LineDelegate *m_delegate {nullptr};
+    QTableView *m_view { nullptr };
+    QAbstractItemModel *m_model { nullptr };
+    LineDelegate *m_delegate { nullptr };
 };

@@ -23,9 +23,7 @@ class LineDelegate : public QStyledItemDelegate
 {
     Q_OBJECT
 public:
-    LineDelegate(QObject* parent = nullptr);
+    LineDelegate(QObject *parent = nullptr);
 
-    void paint(QPainter *painter,
-               const QStyleOptionViewItem &option, const QModelIndex &index) const override;
-
+    void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const override;
 };

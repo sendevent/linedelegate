@@ -15,8 +15,8 @@
    along with this program. If not, see <https://www.gnu.org/licenses/lgpl-3.0.html>.
 */
 
-#include <QObject>
 #include <QLineF>
+#include <QObject>
 #include <QRect>
 
 #pragma once
@@ -26,28 +26,26 @@
  * \a from & \a to are the X coordinates of start and end point in cell in logical range [0.0, 1.0].
  */
 
-struct Line
-{
-    static constexpr int DataRole = Qt::UserRole+1;
+struct Line {
+    static constexpr int DataRole = Qt::UserRole + 1;
     qreal from;
     qreal to;
 
-    bool isEmpty() const {return qFuzzyCompare(from,to);}
-    bool isFull() const {return !isEmpty() && qFuzzyIsNull(from) && qFuzzyCompare(1., to);}
+    bool isEmpty() const { return qFuzzyCompare(from, to); }
+    bool isFull() const { return !isEmpty() && qFuzzyIsNull(from) && qFuzzyCompare(1., to); }
 
-    QLineF toQLine( const QRect& viewport ) const
+    QLineF toQLine(const QRect &viewport) const
     {
         const QPoint &center = viewport.center();
         QPointF p1(viewport.left(), center.y());
         QPointF p2(viewport.right(), center.y());
 
-        if(!isFull())
-        {
-            p1.rx() = viewport.left() + viewport.width()*qreal(from);
-            p2.rx() = viewport.left() + viewport.width()*qreal(to);
+        if (!isFull()) {
+            p1.rx() = viewport.left() + viewport.width() * qreal(from);
+            p2.rx() = viewport.left() + viewport.width() * qreal(to);
         }
 
-        return {p1,p2};
+        return { p1, p2 };
     }
 };
 

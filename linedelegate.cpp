@@ -15,30 +15,29 @@
    along with this program. If not, see <https://www.gnu.org/licenses/lgpl-3.0.html>.
 */
 
-#include "delegatedlinedata.h"
 #include "linedelegate.h"
 
-#include <QPainter>
+#include "delegatedlinedata.h"
+
 #include <QDebug>
+#include <QPainter>
 
 #define LOG qDebug() << Q_FUNC_INFO
 
-LineDelegate::LineDelegate(QObject* parent)
+LineDelegate::LineDelegate(QObject *parent)
     : QStyledItemDelegate(parent)
 {
 }
 
-void LineDelegate::paint(QPainter *painter,
-           const QStyleOptionViewItem &option, const QModelIndex &index) const
+void LineDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
-    QStyledItemDelegate::paint(painter,option,index);
+    QStyledItemDelegate::paint(painter, option, index);
 
     const QVariant &lineData = index.data(Line::DataRole);
-    if(lineData.isValid() && lineData.canConvert<Line>())
-    {
-        const Line& line = lineData.value<Line>();
+    if (lineData.isValid() && lineData.canConvert<Line>()) {
+        const Line &line = lineData.value<Line>();
         const QLineF &lineF = line.toQLine(option.rect);
-        LOG << index.row()<< index.column() << option.rect << line.from << line.to << lineF;
+        LOG << index.row() << index.column() << option.rect << line.from << line.to << lineF;
 
         painter->save();
 
