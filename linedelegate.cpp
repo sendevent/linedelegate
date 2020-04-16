@@ -20,6 +20,8 @@
 #include "delegatedlinedata.h"
 
 #include <QDebug>
+#include <QEvent>
+#include <QMouseEvent>
 #include <QPainter>
 
 #define LOG qDebug() << Q_FUNC_INFO
@@ -41,7 +43,7 @@ void LineDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, 
     if (lineData.isValid() && lineData.canConvert<Line>()) {
         const Line &line = lineData.value<Line>();
         const QLineF &lineF = line.toQLine(option.rect);
-        LOG << index.row() << index.column() << option.rect << line.from << line.to << lineF;
+        //        LOG << index.row() << index.column() << option.rect << line.from << line.to << lineF;
 
         painter->save();
 
@@ -53,4 +55,63 @@ void LineDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, 
 
         painter->restore();
     }
+}
+
+bool LineDelegate::editorEvent(QEvent *event, QAbstractItemModel *model, const QStyleOptionViewItem &option,
+                               const QModelIndex &index)
+{
+    switch (event->type()) {
+    case QEvent::MouseButtonPress:
+        handleMousePress(static_cast<QMouseEvent *>(event), model, option, index);
+        break;
+    case QEvent::MouseMove:
+        handleMouseMove(static_cast<QMouseEvent *>(event), model, option, index);
+        break;
+    case QEvent::MouseButtonRelease:
+        handleMouseRelease(static_cast<QMouseEvent *>(event), model, option, index);
+        break;
+    default:
+        break;
+    }
+
+    return QStyledItemDelegate::editorEvent(event, model, option, index);
+}
+
+void LineDelegate::handleMousePress(QMouseEvent *event, QAbstractItemModel *model, const QStyleOptionViewItem &option,
+                                    const QModelIndex &index)
+{
+    Q_UNUSED(event);
+    Q_UNUSED(model);
+
+    if (index.isValid()) {
+        startIndex = index;
+        startPoint = { event->x() - option.rect.x(), option.rect.center().y() };
+    }
+}
+
+void LineDelegate::handleMouseMove(QMouseEvent *event, QAbstractItemModel *model, const QStyleOptionViewItem &option,
+                                   const QModelIndex &index)
+{
+    const QPoint endPoint = { event->x() - option.rect.x(), option.rect.center().y() };
+    if (startIndex != index) {
+        startIndex = index;
+        startPoint = endPoint;
+    }
+
+    //    LOG << startPoint << endPoint;
+    const Line &line = Line::fromQLine({ startPoint, endPoint }, option.rect);
+
+    model->setData(index, QVariant::fromValue(line), Line::DataRole);
+}
+
+void LineDelegate::handleMouseRelease(QMouseEvent *event, QAbstractItemModel *model, const QStyleOptionViewItem &option,
+                                      const QModelIndex &index)
+{
+    Q_UNUSED(event);
+    Q_UNUSED(model);
+    Q_UNUSED(option);
+    Q_UNUSED(index);
+
+    startIndex = QModelIndex();
+    startPoint = { -1, -1 };
 }

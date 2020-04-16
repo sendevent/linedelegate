@@ -15,6 +15,7 @@
    along with this program. If not, see <https://www.gnu.org/licenses/lgpl-3.0.html>.
 */
 
+#include <QDebug>
 #include <QLineF>
 #include <QObject>
 #include <QRect>
@@ -46,6 +47,12 @@ struct Line {
         }
 
         return { p1, p2 };
+    }
+
+    static Line fromQLine(const QLine &line, const QRect &viewport)
+    {
+        const qreal w(viewport.width());
+        return { qreal(line.x1()) / w, qreal(line.x2()) / w };
     }
 };
 

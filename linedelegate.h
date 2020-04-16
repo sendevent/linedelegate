@@ -27,7 +27,18 @@ public:
     LineDelegate(QObject *parent = nullptr);
 
     void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const override;
+    bool editorEvent(QEvent *event, QAbstractItemModel *model, const QStyleOptionViewItem &option,
+                     const QModelIndex &index) override;
 
 private:
     QPen linePen, framePen;
+    QPoint startPoint;
+    QModelIndex startIndex;
+
+    void handleMousePress(QMouseEvent *event, QAbstractItemModel *model, const QStyleOptionViewItem &option,
+                          const QModelIndex &index);
+    void handleMouseMove(QMouseEvent *event, QAbstractItemModel *model, const QStyleOptionViewItem &option,
+                         const QModelIndex &index);
+    void handleMouseRelease(QMouseEvent *event, QAbstractItemModel *model, const QStyleOptionViewItem &option,
+                            const QModelIndex &index);
 };
