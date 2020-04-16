@@ -26,7 +26,11 @@
 
 LineDelegate::LineDelegate(QObject *parent)
     : QStyledItemDelegate(parent)
+    , linePen(Qt::darkGreen)
+    , framePen(Qt::red)
 {
+    linePen.setWidthF(2.);
+    framePen.setWidthF(1.5);
 }
 
 void LineDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
@@ -41,14 +45,10 @@ void LineDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, 
 
         painter->save();
 
-        QPen marker(Qt::darkGreen);
-        marker.setWidthF(2.);
-        painter->setPen(marker);
+        painter->setPen(linePen);
         painter->drawLine(lineF);
 
-        marker.setColor(Qt::red);
-        marker.setWidthF(1.5);
-        painter->setPen(marker);
+        painter->setPen(framePen);
         painter->drawRect(option.rect);
 
         painter->restore();

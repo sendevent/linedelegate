@@ -17,6 +17,7 @@
 
 #pragma once
 
+#include <QPen>
 #include <QStyledItemDelegate>
 
 class LineDelegate : public QStyledItemDelegate
@@ -26,4 +27,7 @@ public:
     LineDelegate(QObject *parent = nullptr);
 
     void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const override;
+
+private:
+    QPen linePen, framePen;
 };
