@@ -1,5 +1,7 @@
 #include "mainwindow.h"
 
+#include "linedelegate.h"
+
 #include <QTableView>
 #include <QStandardItemModel>
 #include <QDebug>
@@ -8,6 +10,7 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , m_view(new QTableView(this))
     , m_model(new QStandardItemModel(this))
+    , m_delegate(new LineDelegate(this))
 {
     static constexpr int rowsCount {100};
     static constexpr int columnsCount {10};
@@ -21,11 +24,12 @@ MainWindow::MainWindow(QWidget *parent)
                 m_model->insertColumn(column);
 
             const QModelIndex &id = m_model->index(row,column);
-            m_model->setData(id, QString("[%1x%2]").arg(QString::number(row+1),QString::number(column+1g)));
+            m_model->setData(id, QString("[%1x%2]").arg(QString::number(row+1),QString::number(column+1)));
         }
     }
 
     m_view->setModel(m_model);
+    m_view->setItemDelegate(m_delegate);
     setCentralWidget(m_view);
 }
 

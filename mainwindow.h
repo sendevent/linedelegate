@@ -4,7 +4,7 @@
 
 class QTableView;
 class QAbstractItemModel;
-
+class LineDelegate;
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -16,4 +16,5 @@ public:
 private:
     QTableView *m_view {nullptr};
     QAbstractItemModel *m_model {nullptr};
+    LineDelegate *m_delegate {nullptr};
 };
