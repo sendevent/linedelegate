@@ -1,5 +1,7 @@
 #include "delegatedlinedata.h"
 #include "linedelegate.h"
+
+#include <QPainter>
 #include <QDebug>
 
 #define LOG qDebug() << Q_FUNC_INFO
@@ -18,6 +20,21 @@ void LineDelegate::paint(QPainter *painter,
     if(lineData.isValid() && lineData.canConvert<Line>())
     {
         const Line& line = lineData.value<Line>();
-        LOG << index.row()<< index.column() << line.from << line.to;
+        const QLineF &lineF = line.toQLine(option.rect);
+        LOG << index.row()<< index.column() << option.rect << line.from << line.to << lineF;
+
+        painter->save();
+
+        QPen marker(Qt::darkGreen);
+        marker.setWidthF(2.);
+        painter->setPen(marker);
+        painter->drawLine(lineF);
+
+        marker.setColor(Qt::red);
+        marker.setWidthF(1.5);
+        painter->setPen(marker);
+        painter->drawRect(option.rect);
+
+        painter->restore();
     }
 }
