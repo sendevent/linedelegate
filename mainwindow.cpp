@@ -29,9 +29,17 @@ MainWindow::MainWindow(QWidget *parent)
         }
     }
 
-    const QModelIndex testDelegate = m_model->index(1,1);
-    const Line line { 0.2, 0.8 };
-    m_model->setData(testDelegate, QVariant::fromValue(line), Line::DataRole);
+    {
+        const QModelIndex testDelegate = m_model->index(1,1);
+        const Line line { 0.2, 0.8 };
+        m_model->setData(testDelegate, QVariant::fromValue(line), Line::DataRole);
+    }
+
+    {
+        const QModelIndex testDelegate = m_model->index(3,3);
+        const Line line { 0.1, 0.9 };
+        m_model->setData(testDelegate, QVariant::fromValue(line), Line::DataRole);
+    }
 
     m_view->setModel(m_model);
     m_view->setItemDelegate(m_delegate);
