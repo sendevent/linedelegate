@@ -21,6 +21,7 @@ SOURCES += \
     mainwindow.cpp
 
 HEADERS += \
+    delegatedlinedata.h \
     linedelegate.h \
     mainwindow.h
 

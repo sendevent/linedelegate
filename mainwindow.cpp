@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 
 #include "linedelegate.h"
+#include "delegatedlinedata.h"
 
 #include <QTableView>
 #include <QStandardItemModel>
@@ -27,6 +28,10 @@ MainWindow::MainWindow(QWidget *parent)
             m_model->setData(id, QString("[%1x%2]").arg(QString::number(row+1),QString::number(column+1)));
         }
     }
+
+    const QModelIndex testDelegate = m_model->index(1,1);
+    const Line line { 0.2, 0.8 };
+    m_model->setData(testDelegate, QVariant::fromValue(line), Line::DataRole);
 
     m_view->setModel(m_model);
     m_view->setItemDelegate(m_delegate);
