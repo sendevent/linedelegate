@@ -1,11 +1,9 @@
-#ifndef MAINWINDOW_H
-#define MAINWINDOW_H
+#pragma once
 
 #include <QMainWindow>
 
-QT_BEGIN_NAMESPACE
-namespace Ui { class MainWindow; }
-QT_END_NAMESPACE
+class QTableView;
+class QAbstractItemModel;
 
 class MainWindow : public QMainWindow
 {
@@ -16,6 +14,6 @@ public:
     ~MainWindow();
 
 private:
-    Ui::MainWindow *ui;
+    QTableView *m_view {nullptr};
+    QAbstractItemModel *m_model {nullptr};
 };
-#endif // MAINWINDOW_H
