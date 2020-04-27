@@ -28,6 +28,15 @@
 TableView::TableView(QWidget *parent)
     : QTableView(parent)
 {
+    auto createCircle = [](qreal r) {
+        QPainterPath p;
+        p.addEllipse(r, r, r, r);
+        return p;
+    };
+
+    m_gripStart = createCircle(10.);
+    m_gripEnd = createCircle(15.);
+
     m_marker.setWidthF(1.5);
     m_highlighter.setWidthF(2.);
 
@@ -52,7 +61,7 @@ void TableView::paintEvent(QPaintEvent *e)
 void TableView::drawLines(QPainter *painter, const QRectF &rect)
 {
     for (auto &line : m_lines)
-        if (line->intersects(rect))
+        if (line->intersectsProlonged(rect))
             drawLine(painter, line);
 }
 
@@ -71,6 +80,14 @@ void TableView::drawLine(QPainter *painter, const Line *line)
         }();
 
         painter->strokePath(stroke, m_highlighter);
+
+        painter->save();
+        painter->setPen(m_highlighter);
+        painter->drawPath(m_gripStart);
+        painter->drawPath(m_gripEnd);
+        if (m_gripActive)
+            painter->fillPath(*m_gripActive, m_gripPen.color());
+        painter->restore();
     }
 }
 
@@ -111,52 +128,158 @@ void TableView::commitLine(Line *line)
     if (!line->isComplete()) {
         m_lines.removeAll(line);
         delete line;
+        m_gripActive = nullptr;
+        return;
     }
+
+    const QLineF &l = line->graphicLine();
+    if (l.x2() < l.x1()) {
+        qSwap(line->start(), line->end());
+        m_currLine->updateItemViewStart(visualRect(line->constStart().m_index));
+        m_currLine->updateItemViewEnd(visualRect(line->constEnd().m_index));
+
+        if (m_gripActive)
+            selectLine(m_gripActive->boundingRect().center());
+
+        updateCells(line);
+    }
+}
+
+void TableView::updateCells(const Line *forLine)
+{
+    if (!forLine)
+        return;
+
+    const int currRow = forLine->constStart().m_index.row();
+    int firstColumn = qMin(forLine->constStart().m_index.column(), forLine->constEnd().m_index.column());
+    int lastColumn = qMax(forLine->constStart().m_index.column(), forLine->constEnd().m_index.column());
+
+    // columns extended by one to the left and right to avoid drawningartefacts
+    // when a cell is excluded from the line
+    const QModelIndex first = model()->index(currRow, firstColumn - 1);
+    const QModelIndex last = model()->index(currRow, lastColumn + 1);
+    model()->dataChanged(first, last);
+    update();
+}
+
+void TableView::createNewLine(const QPointF &pos)
+{
+    m_currLine = createLine(pos);
+    if (m_currLine) {
+        m_currLine->start().m_percent = 0.25;
+        m_currLine->end().m_percent = 0.75;
+
+        const QRectF &itemRect = visualRect(m_currLine->constStart().m_index);
+        m_currLine->updateItemViewStart(itemRect);
+        m_currLine->updateItemViewEnd(itemRect);
+
+        updateCells(m_currLine);
+    }
+}
+
+void TableView::activateGripAt(const QPointF &pos)
+{
+    m_gripActive = nullptr;
+
+    if (m_currLine)
+        for (const auto path : { &m_gripStart, &m_gripEnd })
+            if (path->contains(pos)) {
+                m_gripActive = path;
+                break;
+            }
+}
+
+bool TableView::selectLine(const QPointF &pos)
+{
+    static constexpr qreal tolerancePixels { 15. };
+    QRectF searchArea(0., 0., tolerancePixels, tolerancePixels);
+    searchArea.moveCenter(pos);
+
+    m_currLine = nullptr;
+    m_gripActive = nullptr;
+
+    for (auto &line : m_lines) {
+        if (line->isSelected()) {
+            line->setSelected(false);
+            updateCells(line);
+        }
+
+        if (line->intersectsStrict(searchArea)) {
+            m_currLine = line;
+            m_currLine->setSelected(true);
+            const QLineF &graphicLine = line->graphicLine();
+            m_gripStart.translate(graphicLine.p1() - m_gripStart.boundingRect().center());
+            m_gripEnd.translate(graphicLine.p2() - m_gripEnd.boundingRect().center());
+            activateGripAt(pos);
+            updateCells(m_currLine);
+        }
+    }
+    return m_currLine;
 }
 
 void TableView::mousePressEvent(QMouseEvent *e)
 {
-    QTableView::mousePressEvent(e);
+    const QPointF cursor = e->pos();
 
-    const QPoint &cursor = e->pos();
-    m_currLine = createLine(cursor);
-    if (m_currLine) {
-        const QRectF &itemRect = visualRect(m_currLine->constStart().m_index);
-        m_currLine->updateItemViewStart(itemRect);
-        m_currLine->updateItemViewEnd(itemRect);
-        update();
+    if (e->button() == Qt::LeftButton && e->modifiers() == Qt::ControlModifier) {
+        createNewLine(cursor);
+        selectLine(cursor);
+        return;
     }
+
+    if (m_currLine && m_currLine->isSelected()) {
+        activateGripAt(e->pos());
+        return;
+    }
+
+    if (selectLine(cursor))
+        return;
+
+    QTableView::mousePressEvent(e);
 }
 
 void TableView::mouseMoveEvent(QMouseEvent *e)
 {
-    QTableView::mouseMoveEvent(e);
 
     if (m_currLine) {
-        m_currLine->end() = linePointForPos(e->pos());
-        m_currLine->updateItemViewEnd(visualRect(m_currLine->constEnd().m_index));
+        if (m_gripActive == &m_gripStart)
+            m_currLine->start() = linePointForPos(e->pos());
+        else if (m_gripActive == &m_gripEnd)
+            m_currLine->end() = linePointForPos(e->pos());
 
-        const int currRow = m_currLine->constStart().m_index.row();
-        int firstColumn = qMin(m_currLine->constStart().m_index.column(), m_currLine->constEnd().m_index.column());
-        int lastColumn = qMax(m_currLine->constStart().m_index.column(), m_currLine->constEnd().m_index.column());
-
-        const QModelIndex first = model()->index(currRow, firstColumn);
-        const QModelIndex last = model()->index(currRow, lastColumn);
-        model()->dataChanged(first, last);
+        updateLine(m_currLine);
+        updateCells(m_currLine);
+        return;
     }
+
+    QTableView::mouseMoveEvent(e);
 }
 
 void TableView::mouseReleaseEvent(QMouseEvent *e)
 {
-    QTableView::mouseReleaseEvent(e);
     commitLine(m_currLine);
     m_currLine = nullptr;
+
+    QTableView::mouseReleaseEvent(e);
 }
 
 void TableView::updateGraphicLines()
 {
-    for (auto &line : m_lines) {
-        line->updateItemViewStart(visualRect(line->constStart().m_index));
-        line->updateItemViewEnd(visualRect(line->constEnd().m_index));
+    for (auto &line : m_lines)
+        updateLine(line);
+}
+
+void TableView::updateLine(Line *line)
+{
+    if (!line)
+        return;
+
+    line->updateItemViewStart(visualRect(line->constStart().m_index));
+    line->updateItemViewEnd(visualRect(line->constEnd().m_index));
+
+    if (line->isSelected()) {
+        const QLineF &graphicLine = line->graphicLine();
+        m_gripStart.translate(graphicLine.p1() - m_gripStart.boundingRect().center());
+        m_gripEnd.translate(graphicLine.p2() - m_gripEnd.boundingRect().center());
     }
 }

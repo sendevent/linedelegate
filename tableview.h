@@ -19,6 +19,7 @@
 
 #include "line.h"
 
+#include <QPainterPath>
 #include <QPen>
 #include <QTableView>
 #include <QVector>
@@ -44,7 +45,13 @@ private:
     QVector<Line *> m_lines {};
     QPen m_marker { Qt::darkGreen };
     QPen m_highlighter { Qt::blue };
+    QPen m_gripPen { Qt::yellow };
+
     Line *m_currLine { nullptr };
+
+    QPainterPath m_gripStart;
+    QPainterPath m_gripEnd;
+    QPainterPath *m_gripActive { nullptr };
 
     void drawLines(QPainter *painter, const QRectF &rect);
     void drawLine(QPainter *painter, const Line *line);
@@ -53,4 +60,12 @@ private:
     void commitLine(Line *line);
 
     Line::Point linePointForPos(const QPointF &pos) const;
+
+    void createNewLine(const QPointF &pos);
+    bool selectLine(const QPointF &pos);
+
+    void updateCells(const Line *forLine);
+
+    void activateGripAt(const QPointF &pos);
+    void updateLine(Line *line);
 };
