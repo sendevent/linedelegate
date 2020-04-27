@@ -77,7 +77,17 @@ QLineF Line::graphicLine() const
     return m_line;
 }
 
-bool Line::intersects(const QRectF &rect) const
+bool Line::intersectsProlonged(const QRectF &rect) const
+{
+    return intersects(rect, { QLineF::BoundedIntersection, QLineF::UnboundedIntersection });
+}
+
+bool Line::intersectsStrict(const QRectF &rect) const
+{
+    return intersects(rect, { QLineF::BoundedIntersection });
+}
+
+bool Line::intersects(const QRectF &rect, const QVector<int> &intersectionTypes) const
 {
     if (rect.isNull())
         return false;
@@ -94,7 +104,7 @@ bool Line::intersects(const QRectF &rect) const
     };
 
     for (const auto edge : edges)
-        if (QLineF::NoIntersection != myLine.intersects(edge, nullptr))
+        if (intersectionTypes.contains(myLine.intersects(edge, nullptr)))
             return true;
 
     return false;

@@ -54,7 +54,8 @@ public:
     bool isSelected() const;
     void setSelected(bool selected);
 
-    bool intersects(const QRectF &rect) const;
+    bool intersectsProlonged(const QRectF &rect) const;
+    bool intersectsStrict(const QRectF &rect) const;
 
     QLineF graphicLine() const;
 
@@ -68,4 +69,6 @@ private:
 
     QRectF m_itemViewStart {}, m_itemViewEnd {};
     QLineF m_line;
+
+    bool intersects(const QRectF &rect, const QVector<int> &intersectionTypes) const;
 };
