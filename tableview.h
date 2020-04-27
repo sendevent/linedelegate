@@ -19,6 +19,7 @@
 
 #include "line.h"
 
+#include <QMap>
 #include <QPainterPath>
 #include <QPen>
 #include <QTableView>
@@ -43,16 +44,19 @@ private slots:
 
 private:
     QVector<Line *> m_lines {};
-    QPen m_marker { Qt::darkGreen };
+    QPen m_marker { Qt::black };
     QPen m_highlighter { Qt::blue };
     QPen m_gripPen { Qt::yellow };
 
     Line *m_currLine { nullptr };
 
+    QMap<const Line *, QPainterPath> m_linePaths;
+
     QPainterPath m_gripStart;
     QPainterPath m_gripEnd;
     QPainterPath *m_gripActive { nullptr };
 
+private:
     void drawLines(QPainter *painter, const QRectF &rect);
     void drawLine(QPainter *painter, const Line *line);
 

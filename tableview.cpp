@@ -25,6 +25,13 @@
 #include <QPainter>
 #include <QScrollBar>
 
+QPainterPath createBlock(qreal w, qreal h)
+{
+    QPainterPath path;
+    path.addRect(0., 0., w, h);
+    return path;
+}
+
 TableView::TableView(QWidget *parent)
     : QTableView(parent)
 {
@@ -39,6 +46,7 @@ TableView::TableView(QWidget *parent)
 
     m_marker.setWidthF(1.5);
     m_highlighter.setWidthF(2.);
+    m_gripPen.setWidthF(2.5);
 
     for (auto headerView : { horizontalHeader(), verticalHeader() })
         connect(headerView, &QHeaderView::sectionResized, this, &TableView::updateGraphicLines);
@@ -67,27 +75,24 @@ void TableView::drawLines(QPainter *painter, const QRectF &rect)
 
 void TableView::drawLine(QPainter *painter, const Line *line)
 {
-    const QLineF &lineF = line->graphicLine();
-    painter->drawLine(lineF);
+    const QPainterPath &path = m_linePaths[line];
 
     if (line->isSelected()) {
-        const QPainterPath stroke = [&lineF] {
-            QPainterPath path;
-            path.moveTo(lineF.p1());
-            path.lineTo(lineF.p2());
-
-            return path;
-        }();
-
-        painter->strokePath(stroke, m_highlighter);
-
         painter->save();
         painter->setPen(m_highlighter);
+
+        //        painter->strokePath(path, m_highlighter);
+        painter->drawLine(line->graphicLine());
+
         painter->drawPath(m_gripStart);
         painter->drawPath(m_gripEnd);
         if (m_gripActive)
             painter->fillPath(*m_gripActive, m_gripPen.color());
+
         painter->restore();
+    } else {
+        painter->fillPath(path, m_marker.color());
+        painter->drawPath(path);
     }
 }
 
@@ -133,6 +138,7 @@ void TableView::commitLine(Line *line)
     }
 
     const QLineF &l = line->graphicLine();
+
     if (l.x2() < l.x1()) {
         qSwap(line->start(), line->end());
         m_currLine->updateItemViewStart(visualRect(line->constStart().m_index));
@@ -173,6 +179,7 @@ void TableView::createNewLine(const QPointF &pos)
         m_currLine->updateItemViewStart(itemRect);
         m_currLine->updateItemViewEnd(itemRect);
 
+        updateLine(m_currLine);
         updateCells(m_currLine);
     }
 }
@@ -277,8 +284,25 @@ void TableView::updateLine(Line *line)
     line->updateItemViewStart(visualRect(line->constStart().m_index));
     line->updateItemViewEnd(visualRect(line->constEnd().m_index));
 
+    const QLineF &graphicLine = line->graphicLine();
+
+    QPainterPath linePath;
+
+    QPainterPath verticalEdge;
+    verticalEdge.addPath(createBlock(2.5, 20));
+
+    verticalEdge.translate(graphicLine.p1() - verticalEdge.boundingRect().center());
+    linePath.addPath(verticalEdge);
+
+    verticalEdge.translate(graphicLine.p2() - verticalEdge.boundingRect().center());
+    linePath.addPath(verticalEdge);
+
+    linePath.moveTo(graphicLine.p1());
+    linePath.lineTo(graphicLine.p2());
+
+    m_linePaths[line] = linePath;
+
     if (line->isSelected()) {
-        const QLineF &graphicLine = line->graphicLine();
         m_gripStart.translate(graphicLine.p1() - m_gripStart.boundingRect().center());
         m_gripEnd.translate(graphicLine.p2() - m_gripEnd.boundingRect().center());
     }
