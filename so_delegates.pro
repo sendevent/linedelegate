@@ -16,14 +16,18 @@ DEFINES += QT_DEPRECATED_WARNINGS
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    line.cpp \
     linedelegate.cpp \
     main.cpp \
-    mainwindow.cpp
+    mainwindow.cpp \
+    tableview.cpp
 
 HEADERS += \
     delegatedlinedata.h \
+    line.h \
     linedelegate.h \
-    mainwindow.h
+    mainwindow.h \
+    tableview.h
 
 FORMS +=
 

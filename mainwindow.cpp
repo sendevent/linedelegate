@@ -17,17 +17,17 @@
 
 #include "mainwindow.h"
 
-#include "delegatedlinedata.h"
-#include "linedelegate.h"
+//#include "delegatedlinedata.h"
+//#include "linedelegate.h"
+#include "tableview.h"
 
 #include <QStandardItemModel>
-#include <QTableView>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
-    , m_view(new QTableView(this))
+    , m_view(new TableView(this))
     , m_model(new QStandardItemModel(this))
-    , m_delegate(new LineDelegate(this))
+//    , m_delegate(new LineDelegate(this))
 {
     static constexpr int rowsCount { 100 };
     static constexpr int columnsCount { 10 };
@@ -43,20 +43,20 @@ MainWindow::MainWindow(QWidget *parent)
         }
     }
 
-    {
-        const QModelIndex testDelegate = m_model->index(0, 1);
-        const Line line { 0.5, 1.0 };
-        m_model->setData(testDelegate, QVariant::fromValue(line), Line::DataRole);
-    }
+    //    {
+    //        const QModelIndex testDelegate = m_model->index(0, 1);
+    //        const Line line { 0.5, 1.0 };
+    //        m_model->setData(testDelegate, QVariant::fromValue(line), Line::DataRole);
+    //    }
 
-    {
-        const QModelIndex testDelegate = m_model->index(0, 2);
-        const Line line { 0.0, 0.5 };
-        m_model->setData(testDelegate, QVariant::fromValue(line), Line::DataRole);
-    }
+    //    {
+    //        const QModelIndex testDelegate = m_model->index(0, 2);
+    //        const Line line { 0.0, 0.5 };
+    //        m_model->setData(testDelegate, QVariant::fromValue(line), Line::DataRole);
+    //    }
 
     m_view->setModel(m_model);
-    m_view->setItemDelegate(m_delegate);
+    //    m_view->setItemDelegate(m_delegate);
     setCentralWidget(m_view);
 }
 
